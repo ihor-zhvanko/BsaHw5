@@ -41,6 +41,7 @@ namespace Airport.BusinessLogic.Services
           item.CrewId = null;
 
         _unitOfWork.Set<Airhostess>().Update(item);
+        _unitOfWork.SaveChanges();
       }
     }
   }
