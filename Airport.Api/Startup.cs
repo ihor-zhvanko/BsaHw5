@@ -23,6 +23,7 @@ using Airport.Data.DatabaseContext;
 using Airport.BusinessLogic.Mappers;
 using Airport.BusinessLogic.Services;
 using Airport.BusinessLogic.Models;
+using Airport.Data.AirportInitializer;
 
 namespace Airport.Api
 {
@@ -43,7 +44,11 @@ namespace Airport.Api
       services.AddSingleton<DataSource>();
 
       string connection = Configuration.GetConnectionString("DefaultConnection");
-      services.AddDbContext<AirportDbContext>(options => options.UseSqlServer(connection));
+      services.AddDbContext<AirportDbContext>(options =>
+        options.UseSqlServer(connection, b => b.MigrationsAssembly("Airport.Api"))
+      , ServiceLifetime.Transient);
+
+      services.AddTransient<AirportInitializer>();
 
       services.AddSingleton<IValidator<AirhostessModel>, AirhostessModelValidator>();
       services.AddSingleton<IValidator<CrewInputModel>, CrewInputModelValidator>();
@@ -69,7 +74,7 @@ namespace Airport.Api
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-    public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+    public void Configure(IApplicationBuilder app, IHostingEnvironment env, AirportInitializer airportInitializer)
     {
       if (env.IsDevelopment())
       {
@@ -78,6 +83,8 @@ namespace Airport.Api
 
       app.UseErrorHandlingMiddleware();
       app.UseMvc();
+
+      airportInitializer.Seed().Wait();
     }
   }
 }
