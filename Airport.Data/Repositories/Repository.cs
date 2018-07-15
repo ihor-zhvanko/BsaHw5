@@ -7,61 +7,52 @@ using Airport.Common.Exceptions;
 
 using Airport.Data.MockData;
 using Airport.Data.Models;
+using Airport.Data.DatabaseContext;
 
 namespace Airport.Data.Repositories
 {
   public class Repository<TEntity> : IRepository<TEntity> where TEntity : Entity
   {
-    protected DataSource _dataSource;
-    public Repository(DataSource dataSource)
+    protected AirportDbContext _dbContext;
+    public Repository(AirportDbContext dbContext)
     {
-      _dataSource = dataSource;
+      _dbContext = dbContext;
     }
 
     public virtual IEnumerable<TEntity> Get(Expression<Func<TEntity, bool>> filter = null)
     {
       if (filter != null)
-        return _dataSource.Get<TEntity>().Where(filter.Compile());
+        return _dbContext.Set<TEntity>().Where(filter);
 
-      return _dataSource.Get<TEntity>();
-    }
-
-    protected int GenerateUniqueId()
-    {
-      var id = _dataSource.Get<TEntity>().OrderByDescending(x => x.Id).First().Id;
-
-      return id + 1;
+      return _dbContext.Set<TEntity>();
     }
 
     public virtual TEntity Create(TEntity entity, string createdBy = null)
     {
-      entity.Id = GenerateUniqueId();
-      _dataSource.Get<TEntity>().Add(entity);
+      _dbContext.Set<TEntity>().Add(entity);
       return entity;
     }
 
     public virtual TEntity Update(TEntity entity, string modifiedBy = null)
     {
-      Delete(entity);
-      _dataSource.Get<TEntity>().Add(entity);
+      _dbContext.Update(entity);
       return entity;
     }
 
     public virtual void Delete(TEntity entity)
     {
-      Delete(entity.Id);
+      _dbContext.Set<TEntity>().Remove(entity);
     }
 
     public virtual void Delete(int id)
     {
-      var toDelete = Get(id);
-
-      _dataSource.Get<TEntity>().Remove(toDelete);
+      var entity = _dbContext.Set<TEntity>().Where(x => x.Id == id);
+      _dbContext.RemoveRange(entity);
     }
 
     public virtual TEntity Get(int id)
     {
-      var result = _dataSource.Get<TEntity>().FirstOrDefault(x => x.Id == id);
+      var result = _dbContext.Set<TEntity>().FirstOrDefault(x => x.Id == id);
       if (result == null)
         throw new NotFoundException(typeof(TEntity).Name + " with such id was not found");
       return result;

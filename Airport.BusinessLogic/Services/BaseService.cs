@@ -21,6 +21,7 @@ namespace Airport.BusinessLogic.Services
     {
       var entity = Mapper.Map<TEntity>(model);
       entity = _unitOfWork.Set<TEntity>().Create(entity);
+      _unitOfWork.SaveChanges();
 
       return Mapper.Map<TModel>(entity);
     }
@@ -29,11 +30,13 @@ namespace Airport.BusinessLogic.Services
     {
       var entity = Mapper.Map<TEntity>(model);
       _unitOfWork.Set<TEntity>().Delete(entity);
+      _unitOfWork.SaveChanges();
     }
 
     public virtual void Delete(int id)
     {
       _unitOfWork.Set<TEntity>().Delete(id);
+      _unitOfWork.SaveChanges();
     }
 
     public virtual IList<TModel> GetAll()
@@ -55,6 +58,7 @@ namespace Airport.BusinessLogic.Services
     {
       var entity = Mapper.Map<TEntity>(model);
       entity = _unitOfWork.Set<TEntity>().Update(entity);
+      _unitOfWork.SaveChanges();
 
       return Mapper.Map<TModel>(entity);
     }
