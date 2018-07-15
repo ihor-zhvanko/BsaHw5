@@ -19,5 +19,6 @@ namespace Airport.Data.Models
     [Required]
     [Range(0, 100)]
     public double Experience { get; set; }
+
   }
 }

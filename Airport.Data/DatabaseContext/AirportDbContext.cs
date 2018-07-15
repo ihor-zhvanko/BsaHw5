@@ -18,8 +18,7 @@ namespace Airport.Data.DatabaseContext
 
     public AirportDbContext(DbContextOptions<AirportDbContext> options)
       : base(options)
-    {
-    }
+    { }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

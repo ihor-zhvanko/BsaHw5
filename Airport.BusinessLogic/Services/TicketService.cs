@@ -3,6 +3,8 @@ using System.Linq;
 using System.Collections.Generic;
 using Airport.BusinessLogic.Models;
 
+using Airport.Common.Exceptions;
+
 using Airport.Data.Models;
 using Airport.Data.UnitOfWork;
 
@@ -30,23 +32,19 @@ namespace Airport.BusinessLogic.Services
 
     public IList<TicketDetails> GetAllDetails()
     {
-      var tickets = GetAll();
-      var flights = _flightService.GetAll();
-
-      var joined = from ticket in tickets
-                   join flight in flights
-                    on ticket.FlightId equals flight.Id
-                   select TicketDetails.Create(ticket, flight);
-
-      return joined.ToList();
+      var tickets = _unitOfWork.Set<Ticket>().Details();
+      return tickets.Select(TicketDetails.Create).ToList();
     }
 
     public TicketDetails GetDetails(int id)
     {
-      var ticket = GetById(id);
-      var flight = _flightService.GetById(ticket.FlightId);
+      var ticket = _unitOfWork.Set<Ticket>()
+        .Details(x => x.Id == id).FirstOrDefault();
 
-      return TicketDetails.Create(ticket, flight);
+      if (ticket == null)
+        throw new NotFoundException("Ticket with such id was not found");
+
+      return TicketDetails.Create(ticket);
     }
   }
 }

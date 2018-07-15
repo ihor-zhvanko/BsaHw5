@@ -3,6 +3,8 @@ using System.Linq;
 using System.Collections.Generic;
 using Airport.BusinessLogic.Models;
 
+using Airport.Common.Exceptions;
+
 using Airport.Data.Models;
 using Airport.Data.UnitOfWork;
 
@@ -30,22 +32,19 @@ namespace Airport.BusinessLogic.Services
 
     public IList<PlaneDetails> GetAllDetails()
     {
-      var planes = GetAll();
-      var planeTypes = _planeTypeService.GetAll();
-
-      var joined = from plane in planes
-                   join planeType in planeTypes on plane.PlaneTypeId equals planeType.Id
-                   select PlaneDetails.Create(plane, planeType);
-
-      return joined.ToList(); ;
+      var planes = _unitOfWork.Set<Plane>().Details();
+      return planes.Select(PlaneDetails.Create).ToList();
     }
 
     public PlaneDetails GetDetails(int id)
     {
-      var plane = GetById(id);
-      var planeType = _planeTypeService.GetById(plane.PlaneTypeId);
+      var plane = _unitOfWork.Set<Plane>()
+        .Details(x => x.Id == id).FirstOrDefault();
 
-      return PlaneDetails.Create(plane, planeType);
+      if (plane == null)
+        throw new NotFoundException("Plane with such id was not found");
+
+      return PlaneDetails.Create(plane);
     }
   }
 }

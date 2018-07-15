@@ -1,4 +1,7 @@
 using System;
+using Airport.Data.Models;
+
+using AutoMapper;
 
 namespace Airport.BusinessLogic.Models
 {
@@ -12,14 +15,14 @@ namespace Airport.BusinessLogic.Models
     public CrewDetails Crew { get; set; }
 
     public static DepartureDetails Create(
-      DepartureModel depature, FlightModel flight, PlaneDetails plane, CrewDetails crew
+      Departure departure, PlaneDetails plane, CrewDetails crew
     )
     {
       return new DepartureDetails
       {
-        Id = depature.Id,
-        Date = depature.Date,
-        Flight = flight,
+        Id = departure.Id,
+        Date = departure.Date,
+        Flight = Mapper.Map<FlightModel>(departure.Flight),
         Plane = plane,
         Crew = crew
       };

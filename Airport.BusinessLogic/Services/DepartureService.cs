@@ -3,6 +3,8 @@ using System.Linq;
 using System.Collections.Generic;
 using Airport.BusinessLogic.Models;
 
+using Airport.Common.Exceptions;
+
 using Airport.Data.Models;
 using Airport.Data.UnitOfWork;
 
@@ -38,28 +40,37 @@ namespace Airport.BusinessLogic.Services
 
     public IList<DepartureDetails> GetAllDetails()
     {
-      var depatures = GetAll();
-      var flights = _flightService.GetAll();
-      var crews = _crewService.GetAllDetails();
-      var planes = _planeService.GetAllDetails();
+      var departures = _unitOfWork.Set<Departure>().Details();
+      var crews = _unitOfWork.Set<Crew>()
+        .Details(x => departures.Any(y => x.Id == y.CrewId))
+        .Select(CrewDetails.Create);
+      var planes = _unitOfWork.Set<Plane>()
+        .Details(x => departures.Any(y => x.Id == y.PlaneId))
+        .Select(PlaneDetails.Create);
 
-      var joined = from departure in depatures
-                   join flight in flights on departure.FlightId equals flight.Id
-                   join crew in crews on departure.CrewId equals crew.Id
-                   join plane in planes on departure.PlaneId equals plane.Id
-                   select DepartureDetails.Create(departure, flight, plane, crew);
-
-      return joined.ToList();
+      return departures.Select(x =>
+      {
+        var plane = planes.First(p => p.Id == x.PlaneId);
+        var crew = crews.First(c => c.Id == x.CrewId);
+        return DepartureDetails.Create(x, plane, crew);
+      }).ToList();
     }
 
     public DepartureDetails GetDetails(int id)
     {
-      var departure = GetById(id);
-      var flight = _flightService.GetById(departure.FlightId);
-      var crew = _crewService.GetDetails(departure.CrewId);
-      var plane = _planeService.GetDetails(departure.PlaneId);
+      var departure = _unitOfWork.Set<Departure>()
+        .Details(x => x.Id == id).FirstOrDefault();
+      if (departure == null)
+        throw new NotFoundException("Departure with such id was not found");
 
-      return DepartureDetails.Create(departure, flight, plane, crew);
+      var crew = _unitOfWork.Set<Crew>()
+        .Details(x => x.Id == departure.CrewId)
+        .Select(CrewDetails.Create).First();
+      var plane = _unitOfWork.Set<Plane>()
+        .Details(x => x.Id == departure.PlaneId)
+        .Select(PlaneDetails.Create).First();
+
+      return DepartureDetails.Create(departure, plane, crew);
     }
 
     public IList<DepartureModel> GetByCrewId(int crewId)

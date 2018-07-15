@@ -8,5 +8,7 @@ namespace Airport.Data.Models
   {
     public int PilotId { get; set; }
     public IList<Airhostess> Airhostesses { get; set; }
+
+    public Pilot Pilot { get; set; }
   }
 }

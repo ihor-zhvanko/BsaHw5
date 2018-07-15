@@ -1,4 +1,6 @@
 using System;
+using Airport.Data.Models;
+using AutoMapper;
 
 namespace Airport.BusinessLogic.Models
 {
@@ -11,7 +13,7 @@ namespace Airport.BusinessLogic.Models
 
     public PlaneTypeModel PlaneType { get; set; }
 
-    public static PlaneDetails Create(PlaneModel plane, PlaneTypeModel planeType)
+    public static PlaneDetails Create(Plane plane)
     {
       return new PlaneDetails
       {
@@ -19,7 +21,7 @@ namespace Airport.BusinessLogic.Models
         Name = plane.Name,
         ReleaseDate = plane.ReleaseDate,
         ServiceLife = plane.ServiceLife,
-        PlaneType = planeType
+        PlaneType = Mapper.Map<PlaneTypeModel>(plane.PlaneType)
       };
     }
   }

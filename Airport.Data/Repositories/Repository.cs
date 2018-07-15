@@ -2,19 +2,20 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore;
 
 using Airport.Common.Exceptions;
 
 using Airport.Data.MockData;
 using Airport.Data.Models;
-using Airport.Data.DatabaseContext;
+
 
 namespace Airport.Data.Repositories
 {
-  public class Repository<TEntity> : IRepository<TEntity> where TEntity : Entity
+  public abstract class Repository<TEntity> : IRepository<TEntity> where TEntity : Entity
   {
-    protected AirportDbContext _dbContext;
-    public Repository(AirportDbContext dbContext)
+    private DbContext _dbContext;
+    public Repository(DbContext dbContext)
     {
       _dbContext = dbContext;
     }
@@ -57,5 +58,7 @@ namespace Airport.Data.Repositories
         throw new NotFoundException(typeof(TEntity).Name + " with such id was not found");
       return result;
     }
+
+    public abstract IEnumerable<TEntity> Details(Expression<Func<TEntity, bool>> filter = null);
   }
 }

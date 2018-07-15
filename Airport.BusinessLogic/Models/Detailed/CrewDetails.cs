@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
-
+using AutoMapper;
 using Airport.Data.Models;
 
 namespace Airport.BusinessLogic.Models
@@ -12,13 +12,13 @@ namespace Airport.BusinessLogic.Models
     public PilotModel Pilot { get; set; }
     public IList<AirhostessModel> Airhostesses { get; set; }
 
-    public static CrewDetails Create(CrewModel crew, PilotModel pilot, IEnumerable<AirhostessModel> airhostesses)
+    public static CrewDetails Create(Crew crew)
     {
       return new CrewDetails
       {
         Id = crew.Id,
-        Pilot = pilot,
-        Airhostesses = airhostesses.ToList()
+        Pilot = Mapper.Map<PilotModel>(crew.Pilot),
+        Airhostesses = Mapper.Map<IList<AirhostessModel>>(crew.Airhostesses)
       };
     }
   }

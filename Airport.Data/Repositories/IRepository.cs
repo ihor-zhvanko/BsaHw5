@@ -16,5 +16,6 @@ namespace Airport.Data.Repositories
 
     TEntity Get(int id);
     void Delete(int id);
+    IEnumerable<TEntity> Details(Expression<Func<TEntity, bool>> filter = null);
   }
 }
